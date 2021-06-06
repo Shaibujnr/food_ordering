@@ -163,7 +163,7 @@ dmypy.json
 ### mine
 .vscode
 *.env
-.env.*
+!*.example.env
 *.db
 *.sqlite
 !*.template
