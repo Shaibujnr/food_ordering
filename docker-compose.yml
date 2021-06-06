@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
     foodiedb:
-        image: mdillon/postgis:11-alpine
+        image: postgres:12-alpine
         container_name: foodiedb
         volumes:
             - postgres_data:/var/lib/postgresql/data/
