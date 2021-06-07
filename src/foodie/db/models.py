@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import Boolean
+from sqlalchemy.sql.sqltypes import Boolean, DateTime, Float, JSON
 from sqlalchemy_utils import ChoiceType, ScalarListType, UUIDType
 from sqlalchemy_utils.models import Timestamp
 from .base import Base
@@ -28,6 +28,7 @@ food_packages_food_categories_association_table = Table(
 class AuthBase(Base, EntityMixin, TimestampMixin):
     __abstract__ = True
     email = Column(String, nullable=False, unique=True)
+    email_verified_on = Column(DateTime, nullable=True)
     hashed_password = Column(String, nullable=False)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
@@ -44,6 +45,7 @@ class User(AuthBase):
 
     __tablename__ = "users"
     phone_number = Column(String, nullable=False)
+    phone_number_verified_on = Column(String, nullable=False)
 
 
 class Vendor(Base, EntityMixin, TimestampMixin):
@@ -146,3 +148,49 @@ class OpenInformation(Base, EntityMixin, TimestampMixin):
     )
     open_from = Column(Timestamp)
     open_to = Column(Timestamp)
+
+
+class Order(Base, EntityMixin, TimestampMixin):
+    __tablename__ = "orders"
+    user_id = Column(ForeignKey("users.id"), nullable=False)
+    vendor_id = Column(ForeignKey("vendors.id"), nullable=False)
+    courier_user_id = Column(ForeignKey("courier_users.id"), nullable=True)
+    vendor_accepted = Column(Boolean, nullable=True)
+    courier_accepted = Column(Boolean, nullable=True)
+
+
+class OrderEvent(Base, EntityMixin, TimestampMixin):
+    __tablename__ = "order_events"
+    order_id = Column(ForeignKey("orders.id"), nullable=False)
+    event_type = Column(
+        ChoiceType(enums.OrderEventType, impl=String()),
+        nullable=False,
+    )
+    payload = Column(JSON, nullable=False)
+
+
+class UserVendorFeedback(Base, EntityMixin, TimestampMixin):
+    __tablename__ = "user_vendor_feedbacks"
+    __table_args__ = (UniqueConstraint("vendor_id", "user_id"),)
+    user_id = Column(ForeignKey("users.id"), nullable=False)
+    vendor_id = Column(ForeignKey("vendors.id"), nullable=False)
+    rating = Column(Float, nullable=False)
+    feedback = Column(String, nullable=True)
+
+
+class UserFoodPackageFeedback(Base, EntityMixin, TimestampMixin):
+    __tablename__ = "user_food_package_feedbacks"
+    __table_args__ = (UniqueConstraint("food_package_id", "user_id"),)
+    user_id = Column(ForeignKey("users.id"), nullable=False)
+    food_pacakge_id = Column(ForeignKey("food_packages.id"), nullable=False)
+    rating = Column(Float, nullable=False)
+    feedback = Column(String, nullable=True)
+
+
+class UserCourierFeedback(Base, EntityMixin, TimestampMixin):
+    __tablename__ = "user_food_package_feedbacks"
+    __table_args__ = (UniqueConstraint("courier_id", "user_id"),)
+    user_id = Column(ForeignKey("users.id"), nullable=False)
+    courier_id = Column(ForeignKey("couriers.id"), nullable=False)
+    rating = Column(Float, nullable=False)
+    feedback = Column(String, nullable=True)
