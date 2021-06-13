@@ -7,8 +7,13 @@ APP_ENV: str = os.getenv("APP_ENV", "dev")
 
 
 # eg .env.dev, .env.production, .env.test
-p: Path = Path(__file__).parents[3] / f"env/.env.{APP_ENV}"
+p: Path = Path(__file__).parents[2] / f"env/.{APP_ENV}.env"
 config: Config = Config(p if p.exists() else None)
+
+print("\n\n\n\n\n")
+print(p.exists())
+print(p)
+print("\n\n\n\n\n")
 
 PROJECT_NAME: str = "Foodie"
 
