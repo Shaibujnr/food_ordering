@@ -12,23 +12,23 @@ testd:
 	APP_ENV=test pytest -s --cov=foodie tests/
 
 build:
-	docker compose build
+	docker-compose build
 
 build-no-cache:
-	docker compose build --no-cache
+	docker-compose build --no-cache
 
 serve:
-	docker compose up -d && docker compose logs -f foodie
+	docker-compose up -d && docker-compose logs -f foodie
 
 migrate:
-	docker compose run foodie alembic upgrade head
+	docker-compose run foodie alembic upgrade head
 
 bash:
-	docker compose run foodie bash
+	docker-compose run foodie bash
 
 
 logs:
-	docker compose logs -f
+	docker-compose logs -f
 
 reset:
-	docker compose rm -fsv
+	docker-compose rm -fsv
