@@ -15,6 +15,7 @@ PyJWT = "^2.1.0"
 inflection = "^0.5.1"
 bcrypt = "^3.2.0"
 passlib = "^1.7.4"
+alembic = "^1.6.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

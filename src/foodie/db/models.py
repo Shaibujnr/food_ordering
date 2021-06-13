@@ -1,16 +1,23 @@
-from sqlalchemy import Column, String, Table, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    String,
+    Table,
+    UniqueConstraint,
+    Time,
+    Boolean,
+    DateTime,
+    Float,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import Boolean, DateTime, Float, JSON
-from sqlalchemy_utils import ChoiceType, ScalarListType, UUIDType
-from sqlalchemy_utils.models import Timestamp
+from sqlalchemy_utils import ChoiceType, ScalarListType, UUIDType, JSONType
 from .base import Base
 from .mixins import EntityMixin, TimestampMixin
 from foodie import enums
 
 
 food_packages_food_categories_association_table = Table(
-    "association",
+    "food_packages_food_categories_association",
     Base.metadata,
     Column(
         "food_package_id",
@@ -20,7 +27,7 @@ food_packages_food_categories_association_table = Table(
     Column(
         "category_id",
         UUIDType(binary=False),
-        ForeignKey("categories.id"),
+        ForeignKey("food_categories.id"),
     ),
 )
 
@@ -146,8 +153,8 @@ class OpenInformation(Base, EntityMixin, TimestampMixin):
         ChoiceType(enums.DaysOfTheWeek, impl=String()),
         nullable=False,
     )
-    open_from = Column(Timestamp)
-    open_to = Column(Timestamp)
+    open_from = Column(Time)
+    open_to = Column(Time)
 
 
 class Order(Base, EntityMixin, TimestampMixin):
@@ -166,7 +173,7 @@ class OrderEvent(Base, EntityMixin, TimestampMixin):
         ChoiceType(enums.OrderEventType, impl=String()),
         nullable=False,
     )
-    payload = Column(JSON, nullable=False)
+    payload = Column(JSONType, nullable=False)
 
 
 class UserVendorFeedback(Base, EntityMixin, TimestampMixin):
@@ -182,13 +189,13 @@ class UserFoodPackageFeedback(Base, EntityMixin, TimestampMixin):
     __tablename__ = "user_food_package_feedbacks"
     __table_args__ = (UniqueConstraint("food_package_id", "user_id"),)
     user_id = Column(ForeignKey("users.id"), nullable=False)
-    food_pacakge_id = Column(ForeignKey("food_packages.id"), nullable=False)
+    food_package_id = Column(ForeignKey("food_packages.id"), nullable=False)
     rating = Column(Float, nullable=False)
     feedback = Column(String, nullable=True)
 
 
 class UserCourierFeedback(Base, EntityMixin, TimestampMixin):
-    __tablename__ = "user_food_package_feedbacks"
+    __tablename__ = "user_courier_feedbacks"
     __table_args__ = (UniqueConstraint("courier_id", "user_id"),)
     user_id = Column(ForeignKey("users.id"), nullable=False)
     courier_id = Column(ForeignKey("couriers.id"), nullable=False)
