@@ -8,32 +8,27 @@ from foodie import config
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def create_token(payload: dict, expires_delta: timedelta = None):
+def create_token(payload: dict, secret: str, expires_delta: timedelta):
     to_encode = payload.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=60)
+    expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    return jwt.encode(
-        to_encode, config.SECRET_KEY, algorithm=config.JWT_ALGORITHM
-    )  # noqa
+    return jwt.encode(to_encode, secret, algorithm=config.JWT_ALGORITHM)  # noqa
 
 
-def create_access_token(data: dict, expires_delta: timedelta = None):
+def create_access_token(
+    data: dict, secret=config.SECRET_KEY, expires_delta: timedelta = None
+):
     expire = expires_delta or timedelta(seconds=config.ACCESS_TOKEN_EXPIRE)
-    return create_token(data, expire)
+    return create_token(data, secret, expire)
 
 
-def get_payload_from_token(token: Union[str, bytes]) -> Any:
-    return jwt.decode(
-        token, config.SECRET_KEY, algorithms=[config.JWT_ALGORITHM]
-    )  # noqa
+def get_payload_from_token(token: Union[str, bytes], secret) -> Any:
+    return jwt.decode(token, secret, algorithms=[config.JWT_ALGORITHM])  # noqa
 
 
-def decode_access_token(token: Union[str, bytes]) -> str:
+def decode_access_token(token: Union[str, bytes], secret=config.SECRET_KEY) -> str:
     # scenario token is not valid
-    payload = get_payload_from_token(token)
+    payload = get_payload_from_token(token, secret)
     user_id: str = payload.get("sub")  # type: ignore
     return user_id
 

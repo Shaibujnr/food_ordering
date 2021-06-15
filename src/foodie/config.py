@@ -10,11 +10,6 @@ APP_ENV: str = os.getenv("APP_ENV", "dev")
 p: Path = Path(__file__).parents[2] / f"env/.{APP_ENV}.env"
 config: Config = Config(p if p.exists() else None)
 
-print("\n\n\n\n\n")
-print(p.exists())
-print(p)
-print("\n\n\n\n\n")
-
 PROJECT_NAME: str = "Foodie"
 
 IS_DEVELOPMENT: bool = APP_ENV == "dev"
@@ -30,6 +25,8 @@ ALLOWED_HOSTS: CommaSeparatedStrings = config(
 DATABASE_URL: str = config("DATABASE_URL", cast=str)
 
 SECRET_KEY: str = config("SECRET_KEY", cast=str)
+
+ACTIVITY_TOKEN_SECRET_KEY: str = config("ACTIVITY_TOKEN_SECRET_KEY", cast=str)
 
 JWT_ALGORITHM: str = config("JWT_ALGORITHM", cast=str, default="HS256")
 

@@ -45,3 +45,10 @@ class OrderEventType(str, Enum):
     DELIVERY_STARTED = "delivery_started"
     DELIVERED = "delivered"
     CLOSED = "closed"
+
+
+class ActivityTokenType(str, Enum):
+    VENDOR_ADMIN_INVITE = "VENDOR_ADMIN_INVITE"
+    COURIER_ADMIN_INVITE = "COURIER_ADMIN_INVITE"
+    COURIER_USER_INVITE = "COURIER_USER_INVITE"
+    VENDOR_USER_INVITE = "VENDOR_USER_INVITE"

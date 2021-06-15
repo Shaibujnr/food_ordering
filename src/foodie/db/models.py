@@ -62,7 +62,7 @@ class Vendor(Base, EntityMixin, TimestampMixin):
     """
 
     __tablename__ = "vendors"
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     type = Column(ChoiceType(enums.VendorType, impl=String()), nullable=False)
     address = Column(String, nullable=False)
 
@@ -86,6 +86,8 @@ class VendorUser(Base, EntityMixin, TimestampMixin):
     )
     hashed_password = Column(String, nullable=False)
 
+    vendor = relationship(Vendor, backref="users")
+
 
 class Courier(Base, EntityMixin, TimestampMixin):
     """
@@ -94,7 +96,7 @@ class Courier(Base, EntityMixin, TimestampMixin):
     """
 
     __tablename__ = "couriers"
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     address = Column(String, nullable=False)
 
     # TODO location
@@ -116,6 +118,8 @@ class CourierUser(Base, EntityMixin, TimestampMixin):
         nullable=False,
     )
     hashed_password = Column(String, nullable=False)
+
+    courier = relationship(Courier, backref="users")
 
 
 class FoodCategory(Base, EntityMixin, TimestampMixin):

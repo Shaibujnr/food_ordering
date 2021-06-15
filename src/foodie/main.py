@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from foodie import config
 from foodie.api.router import (
@@ -8,6 +8,13 @@ from foodie.api.router import (
     get_courier_router,
     get_vendor_router,
     get_router,
+)
+from foodie.api.deps import (
+    get_current_admin,
+    get_current_courier_admin,
+    get_current_vendor_admin,
+    get_current_courier,
+    get_current_vendor,
 )
 
 
@@ -26,12 +33,38 @@ def get_api_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    api.include_router(get_admin_router(), prefix="/admin")
-    api.include_router(get_courier_admin_router(), prefix="/courier-admin")
-    api.include_router(get_vendor_admin_router(), prefix="/vendor-admin")
-    api.include_router(get_courier_router(), prefix="/courier")
-    api.include_router(get_vendor_router(), prefix="/vendor")
-    api.include_router(get_router())
+    api.include_router(
+        get_admin_router(),
+        dependencies=[Depends(get_current_admin)],
+        prefix="/admin",
+        tags=["Admin Routes"],
+    )
+    api.include_router(
+        get_courier_admin_router(),
+        dependencies=[Depends(get_current_courier_admin)],
+        prefix="/courier-admin",
+        tags=["Courier Admin Routes"],
+    )
+    api.include_router(
+        get_vendor_admin_router(),
+        dependencies=[Depends(get_current_vendor_admin)],
+        prefix="/vendor-admin",
+        tags=["Vendor Admin Routes"],
+    )
+    api.include_router(
+        get_vendor_router(),
+        dependencies=[Depends(get_current_vendor)],
+        prefix="/vendor",
+        tags=["Vendor Routes"],
+    )
+    api.include_router(
+        get_courier_router(),
+        dependencies=[Depends(get_current_courier)],
+        prefix="/courier",
+        tags=["Courier Routes"],
+    )
+
+    api.include_router(get_router(), tags=["User Routes"])
     return api
 
 

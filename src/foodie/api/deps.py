@@ -1,11 +1,11 @@
 from uuid import UUID
-from fastapi import Depends, HTTPException
-from fastapi import status as status
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm.session import Session
 from foodie import enums, util
 from foodie.db import models
 from foodie.db.base import SessionLocal
+from foodie.api import exceptions
 
 
 user_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth")
@@ -18,12 +18,6 @@ courier_admin_oauth2_scheme = OAuth2PasswordBearer(
 )  # noqa
 vendor_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/vendor/auth")
 courier_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/courier/auth")
-
-credentials_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Could not validate credentials",
-    headers={"WWW-Authenticate": "Bearer"},
-)
 
 
 def get_session() -> Session:
@@ -41,7 +35,7 @@ def get_current_user(
     user_id: str = util.decode_access_token(token)
     user: models.User = session.query(models.User).get(UUID(user_id))
     if not user:
-        raise credentials_exception
+        raise exceptions.credentials_exception
     return user
 
 
@@ -52,7 +46,7 @@ def get_current_admin(
     admin_id: str = util.decode_access_token(token)
     admin: models.Admin = session.query(models.Admin).get(UUID(admin_id))
     if not admin:
-        raise credentials_exception
+        raise exceptions.credentials_exception
     return admin
 
 
@@ -68,7 +62,7 @@ def get_current_vendor_admin(
         .one_or_none()
     )
     if vendor_admin is None:
-        raise credentials_exception
+        raise exceptions.credentials_exception
     return vendor_admin
 
 
@@ -84,7 +78,7 @@ def get_current_courier_admin(
         .one_or_none()
     )
     if courier_admin is None:
-        raise credentials_exception
+        raise exceptions.credentials_exception
     return courier_admin
 
 
@@ -97,7 +91,7 @@ def get_current_vendor(
         UUID(vendor_id)
     )  # noqa
     if vendor is None:
-        raise credentials_exception
+        raise exceptions.credentials_exception
     return vendor
 
 
@@ -110,5 +104,23 @@ def get_current_courier(
         UUID(courier_id)
     )
     if courier is None:
-        raise credentials_exception
+        raise exceptions.credentials_exception
+    return courier
+
+
+def get_vendor(
+    vendor_id: UUID, session: Session = Depends(get_session)
+) -> models.Vendor:
+    vendor: models.Vendor = session.query(models.Vendor).get(vendor_id)
+    if vendor is None:
+        raise exceptions.vendor_not_found_exception
+    return vendor
+
+
+def get_courier(
+    courier_id: UUID, session: Session = Depends(get_session)
+) -> models.Courier:
+    courier: models.Courier = session.query(models.Courier).get(courier_id)
+    if courier is None:
+        raise exceptions.courier_not_found_exception
     return courier
