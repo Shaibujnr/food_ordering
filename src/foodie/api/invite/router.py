@@ -13,7 +13,7 @@ from foodie.db import models
 router = APIRouter()
 
 
-@router.post("/details", response_model=InviteTokenDetailsSchema)
+@router.get("/details", response_model=InviteTokenDetailsSchema)
 def get_invitation_token_details(
     token: str, session: Session = Depends(deps.get_session)
 ):

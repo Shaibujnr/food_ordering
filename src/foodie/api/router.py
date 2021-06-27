@@ -13,6 +13,7 @@ from foodie.api.invite import (
     admin_invite_router,
     courier_admin_invite_router,
     vendor_admin_invite_router,
+    invite_router,
 )
 
 
@@ -74,4 +75,5 @@ def get_router():
     """Router for all other endpoints"""
     router = APIRouter()
     router.include_router(auth_router, tags=["Authentication"])
+    router.include_router(invite_router, tags=["Invites"])
     return router
