@@ -9,15 +9,15 @@ from foodie.api import exceptions
 
 
 user_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth")
-admin_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/auth")
+admin_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/admin")
 vendor_admin_oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/vendor-admin/auth"
+    tokenUrl="/api/auth/vendor-admin"
 )  # noqa
 courier_admin_oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/courier-admin/auth"
+    tokenUrl="/api/auth/courier-admin"
 )  # noqa
-vendor_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/vendor/auth")
-courier_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/courier/auth")
+vendor_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/vendor")
+courier_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/courier")
 
 
 def get_session() -> Session:
