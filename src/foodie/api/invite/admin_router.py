@@ -28,7 +28,7 @@ def invite_vendor_admin(
         raise HTTPException(400, "Vendor user with same email exists")
     invite_token = util.create_token(
         {
-            "vendor_id": str(vendor.id),
+            "id": str(vendor.id),
             "email": email,
             "token_type": enums.ActivityTokenType.VENDOR_ADMIN_INVITE,
         },
@@ -56,7 +56,7 @@ def invite_courier_admin(
         raise HTTPException(400, "Courier user with same email exists")
     invite_token = util.create_token(
         {
-            "courier_id": str(courier.id),
+            "id": str(courier.id),
             "email": email,
             "token_type": enums.ActivityTokenType.COURIER_ADMIN_INVITE,
         },

@@ -27,3 +27,7 @@ vendor_user_not_found_exception = HTTPException(
 courier_user_not_found_exception = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND, detail="Courier user not found"
 )
+
+invalid_or_expired_token_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token"
+)
