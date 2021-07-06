@@ -11,7 +11,7 @@ from .schema import VendorCreateSchema, VendorSchema
 router = APIRouter()
 
 
-@router.post("/", response_model=VendorSchema)
+@router.post("/", response_model=VendorSchema, status_code=201)
 def create_vendor(
     payload: VendorCreateSchema, session: Session = Depends(deps.get_session)
 ):

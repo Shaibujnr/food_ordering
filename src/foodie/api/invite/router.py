@@ -3,7 +3,7 @@ from jwt import PyJWTError
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import ValidationError
 from sqlalchemy.orm.session import Session
-from foodie import enums, util
+from foodie import enums, util, config
 from foodie.api import deps, exceptions
 from .schema import InviteTokenDetailsSchema, AcceptInviteSchema
 from foodie.dataclasses import InvitationTokenPayload
@@ -21,7 +21,10 @@ def get_invitation_token_details(
     Get details of an invitation token
     """
     try:
-        token_payload = util.get_payload_from_token(token)
+        token_payload = util.get_payload_from_token(
+            token, config.ACTIVITY_TOKEN_SECRET_KEY
+        )
+        del token_payload["exp"]
         token_payload: InvitationTokenPayload = InvitationTokenPayload(**token_payload)
         if token_payload.token_type == enums.ActivityTokenType.VENDOR_ADMIN_INVITE:
             vendor_id = UUID(token_payload.id)
@@ -111,7 +114,7 @@ def get_invitation_token_details(
         raise exceptions.invalid_or_expired_token_exception
 
 
-@router.post("/accept")
+@router.post("/accept", status_code=201)
 def accept_admin_invitation(
     token: str,
     payload: AcceptInviteSchema,
@@ -121,7 +124,10 @@ def accept_admin_invitation(
     Accept invitation from platform admin to be an admin user for a particular vendor
     """
     try:
-        token_payload = util.get_payload_from_token(token)
+        token_payload = util.get_payload_from_token(
+            token, config.ACTIVITY_TOKEN_SECRET_KEY
+        )
+        del token_payload["exp"]
         token_payload: InvitationTokenPayload = InvitationTokenPayload(**token_payload)
         if token_payload.token_type == enums.ActivityTokenType.VENDOR_ADMIN_INVITE:
             vendor_id = UUID(token_payload.id)

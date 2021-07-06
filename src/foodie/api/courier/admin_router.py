@@ -11,7 +11,7 @@ from .schema import CourierSchema, CourierCreateSchema
 router = APIRouter()
 
 
-@router.post("/", response_model=CourierSchema)
+@router.post("/", response_model=CourierSchema, status_code=201)
 def create_courier(
     payload: CourierCreateSchema, session: Session = Depends(deps.get_session)
 ):

@@ -61,5 +61,5 @@ def get_router():
     """Router for all other endpoints"""
     router = APIRouter()
     router.include_router(auth_router, tags=["Authentication"])
-    router.include_router(invite_router, tags=["Invites"])
+    router.include_router(invite_router, prefix="/invites", tags=["Invites"])
     return router

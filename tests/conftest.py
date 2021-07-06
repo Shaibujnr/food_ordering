@@ -1,4 +1,5 @@
 import pytest
+import random
 from datetime import datetime
 from fastapi import FastAPI
 from sqlalchemy import MetaData
@@ -8,7 +9,7 @@ from foodie.config import DATABASE_URL
 from foodie.db import models
 from foodie.db.base import Base, get_engine, SessionLocal
 from foodie.main import get_app
-from foodie import util
+from foodie import util, enums
 from collections import namedtuple
 
 
@@ -62,3 +63,134 @@ def admin(session: Session, admin_details: AdminDetails) -> models.Admin:
     session.add(admin)
     session.commit()
     return admin
+
+
+@pytest.fixture
+def admin_auth_header(session: Session, admin: models.Admin) -> dict:
+    access_token = util.create_access_token({"sub": str(admin.id)})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def restaurant_vendor(session: Session) -> models.Vendor:
+    vendor = models.Vendor(
+        name="Restaurant Vendor",
+        type=enums.VendorType.RESTAURANT,
+        address="restaurant vendor address",
+    )
+    session.add(vendor)
+    session.commit()
+    return vendor
+
+
+@pytest.fixture
+def home_vendor(session: Session) -> models.Vendor:
+    vendor = models.Vendor(
+        name="Home Vendor",
+        type=enums.VendorType.HOME,
+        address="home vendor address",
+    )
+    session.add(vendor)
+    session.commit()
+    return vendor
+
+
+@pytest.fixture
+def food_stand_vendor(session: Session) -> models.Vendor:
+    vendor = models.Vendor(
+        name="Food Stand Vendor",
+        type=enums.VendorType.FOOD_STAND,
+        address="food stand vendor",
+    )
+    session.add(vendor)
+    session.commit()
+    return vendor
+
+
+@pytest.fixture
+def vendor(restaurant_vendor, home_vendor, food_stand_vendor):
+    return random.choice([restaurant_vendor, home_vendor, food_stand_vendor])
+
+
+@pytest.fixture
+def courier(session: Session) -> models.Courier:
+    courier = models.Courier(name="Courier Delivery", address="courier address")
+    session.add(courier)
+    session.commit()
+    return courier
+
+
+@pytest.fixture
+def restaurant_vendor_admin(session: Session, restaurant_vendor: models.Vendor):
+    vendor_admin = models.VendorUser(
+        vendor_id=restaurant_vendor.id,
+        first_name="John",
+        last_name="Doe",
+        role=enums.VendorUserRole.ADMIN,
+        phone_number="08012345678",
+        email="restaurant_vendor_admin@test.com",
+        password=util.hash_password("password"),
+    )
+    session.add(vendor_admin)
+    session.commit()
+    return vendor_admin
+
+
+@pytest.fixture
+def home_vendor_admin(session: Session, home_vendor: models.Vendor):
+    vendor_admin = models.VendorUser(
+        vendor_id=home_vendor.id,
+        first_name="John",
+        last_name="Doe",
+        role=enums.VendorUserRole.ADMIN,
+        phone_number="08012345678",
+        email="home_vendor_admin@test.com",
+        password=util.hash_password("password"),
+    )
+    session.add(vendor_admin)
+    session.commit()
+    return vendor_admin
+
+
+@pytest.fixture
+def food_stand_vendor_admin(session: Session, food_stand_vendor: models.Vendor):
+    vendor_admin = models.VendorUser(
+        vendor_id=food_stand_vendor.id,
+        first_name="John",
+        last_name="Doe",
+        role=enums.VendorUserRole.ADMIN,
+        phone_number="08012345678",
+        email="food_stand_vendor_admin@test.com",
+        password=util.hash_password("password"),
+    )
+    session.add(vendor_admin)
+    session.commit()
+    return vendor_admin
+
+
+@pytest.fixture
+def courier_admin(session: Session, courier: models.Courier):
+    courier_admin = models.CourierUser()
+
+
+@pytest.fixture
+def restaurant_vendor_admin_auth_header(restaurant_vendor_admin: models.VendorUser):
+    access_token = util.create_access_token({"sub": restaurant_vendor_admin.id})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def home_vendor_admin_auth_header(home_vendor_admin: models.VendorUser):
+    access_token = util.create_access_token({"sub": home_vendor_admin.id})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def food_stand_vendor_admin_auth_header(food_stand_vendor_admin: models.VendorUser):
+    access_token = util.create_access_token({"sub": food_stand_vendor_admin.id})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def courier_admin_auth_header(courier):
+    pass

@@ -39,9 +39,6 @@ def authenticate_admin(
         .filter(models.Admin.email == data.username)
         .one_or_none()
     )
-    print("\n\n\n\n\n\n admin auth endpoint")
-    print(admin)
-    print("\n\n\n\n\n\n\n")
     if not admin:
         raise exceptions.invalid_login_credentials_exception
     if not util.password_is_match(data.password, admin.hashed_password):
