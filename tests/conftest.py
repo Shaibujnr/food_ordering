@@ -129,7 +129,7 @@ def restaurant_vendor_admin(session: Session, restaurant_vendor: models.Vendor):
         role=enums.VendorUserRole.ADMIN,
         phone_number="08012345678",
         email="restaurant_vendor_admin@test.com",
-        password=util.hash_password("password"),
+        hashed_password=util.hash_password("password"),
     )
     session.add(vendor_admin)
     session.commit()
@@ -145,7 +145,7 @@ def home_vendor_admin(session: Session, home_vendor: models.Vendor):
         role=enums.VendorUserRole.ADMIN,
         phone_number="08012345678",
         email="home_vendor_admin@test.com",
-        password=util.hash_password("password"),
+        hashed_password=util.hash_password("password"),
     )
     session.add(vendor_admin)
     session.commit()
@@ -170,12 +170,23 @@ def food_stand_vendor_admin(session: Session, food_stand_vendor: models.Vendor):
 
 @pytest.fixture
 def courier_admin(session: Session, courier: models.Courier):
-    courier_admin = models.CourierUser()
+    courier_admin = models.CourierUser(
+        courier_id=courier.id,
+        first_name="John",
+        last_name="Doe",
+        role=enums.CourierUserRole.ADMIN,
+        phone_number="08012345678",
+        email="courier_admin@test.com",
+        hashed_password=util.hash_password("password"),
+    )
+    session.add(courier_admin)
+    session.commit()
+    return courier_admin
 
 
 @pytest.fixture
 def restaurant_vendor_admin_auth_header(restaurant_vendor_admin: models.VendorUser):
-    access_token = util.create_access_token({"sub": restaurant_vendor_admin.id})
+    access_token = util.create_access_token({"sub": str(restaurant_vendor_admin.id)})
     return {"Authorization": f"Bearer {access_token}"}
 
 
@@ -192,5 +203,6 @@ def food_stand_vendor_admin_auth_header(food_stand_vendor_admin: models.VendorUs
 
 
 @pytest.fixture
-def courier_admin_auth_header(courier):
-    pass
+def courier_admin_auth_header(courier_admin: models.Courier):
+    access_token = util.create_access_token({"sub": str(courier_admin.id)})
+    return {"Authorization": f"Bearer {access_token}"}

@@ -1,4 +1,5 @@
 import pytest
+from uuid import uuid4
 from datetime import timedelta
 from sqlalchemy.orm.session import Session
 from starlette.testclient import TestClient
@@ -87,18 +88,18 @@ def test_admin_invite_courier_admin(
 
 def test_vendor_admin_invite_user(
     client: TestClient,
-    sesssion: Session,
+    session: Session,
     restaurant_vendor_admin: models.VendorUser,
     restaurant_vendor_admin_auth_header: dict,
 ):
     assert (
-        sesssion.query(models.VendorUser)
-        .filter(models.VendorUser.vendor_id == restaurant_vendor_admin.id)
+        session.query(models.VendorUser)
+        .filter(models.VendorUser.id == restaurant_vendor_admin.id)
         .count()
         == 1
     )
     response = client.post(
-        "/api/vendor-admin/invites",
+        "/api/vendor-admin/invites/",
         params={"email": "vendor_user@test.com"},
         headers=restaurant_vendor_admin_auth_header,
     )
@@ -107,11 +108,22 @@ def test_vendor_admin_invite_user(
 
 def test_courier_admin_invite_user(
     client: TestClient,
-    sesssion: Session,
-    restaurant_vendor_admin: models.VendorUser,
-    restaurant_vendor_admin_auth_header: dict,
+    session: Session,
+    courier_admin: models.CourierUser,
+    courier_admin_auth_header: dict,
 ):
-    raise Exception()
+    assert (
+        session.query(models.CourierUser)
+        .filter(models.CourierUser.id == courier_admin.id)
+        .count()
+        == 1
+    )
+    response = client.post(
+        "/api/courier-admin/invites/",
+        params={"email": "courier_user@test.com"},
+        headers=courier_admin_auth_header,
+    )
+    assert response.status_code == 200
 
 
 def test_vendor_admin_accept_invite(
@@ -186,24 +198,147 @@ def test_courier_admin_accept_invite(
     assert courier_user.phone_number == "08012345678"
 
 
-def test_vendor_user_accept_invite():
-    raise Exception()
+def test_vendor_user_accept_invite(
+    vendor_user_invitation_token: str,
+    restaurant_vendor: models.Vendor,
+    session: Session,
+    client: TestClient,
+):
+    # TODO should there be vendor staff without vendor admin?
+    assert (
+        session.query(models.VendorUser)
+        .filter(models.VendorUser.vendor_id == restaurant_vendor.id)
+        .count()
+        == 0
+    )
+    response = client.post(
+        "/api/invites/accept",
+        json={
+            "firstName": "John",
+            "lastName": "Doe",
+            "password": "xpassword",
+            "phoneNumber": "08012345678",
+        },
+        params={"token": vendor_user_invitation_token},
+    )
+    assert response.status_code == 201
+    assert (
+        session.query(models.VendorUser)
+        .filter(models.VendorUser.vendor_id == restaurant_vendor.id)
+        .count()
+        == 1
+    )
+    vendor_user = (
+        session.query(models.VendorUser)
+        .filter(models.VendorUser.vendor_id == restaurant_vendor.id)
+        .filter(models.VendorUser.role == enums.VendorUserRole.STAFF)
+        .first()
+    )
+    assert vendor_user.role == enums.VendorUserRole.STAFF
+    assert vendor_user is not None
+    assert vendor_user.email == "vendor_user@test.com"
+    assert vendor_user.first_name == "John"
+    assert vendor_user.last_name == "Doe"
+    assert util.password_is_match("xpassword", vendor_user.hashed_password)
+    assert vendor_user.phone_number == "08012345678"
 
 
-def test_courier_user_accept_invite():
-    raise Exception()
+def test_courier_user_accept_invite(
+    courier_user_invitation_token: str,
+    courier: models.Courier,
+    session: Session,
+    client: TestClient,
+):
+    # TODO should there be courier staff without courier admin?
+    assert (
+        session.query(models.CourierUser)
+        .filter(models.CourierUser.courier_id == courier.id)
+        .count()
+        == 0
+    )
+    response = client.post(
+        "/api/invites/accept",
+        json={
+            "firstName": "John",
+            "lastName": "Doe",
+            "password": "xpassword",
+            "phoneNumber": "08012345678",
+        },
+        params={"token": courier_user_invitation_token},
+    )
+    assert response.status_code == 201
+    assert (
+        session.query(models.CourierUser)
+        .filter(models.CourierUser.courier_id == courier.id)
+        .count()
+        == 1
+    )
+    courier_user = (
+        session.query(models.CourierUser)
+        .filter(models.CourierUser.courier_id == courier.id)
+        .filter(models.CourierUser.role == enums.CourierUserRole.STAFF)
+        .first()
+    )
+    assert courier_user.role == enums.VendorUserRole.STAFF
+    assert courier_user is not None
+    assert courier_user.email == "courier_user@test.com"
+    assert courier_user.first_name == "John"
+    assert courier_user.last_name == "Doe"
+    assert util.password_is_match("xpassword", courier_user.hashed_password)
+    assert courier_user.phone_number == "08012345678"
 
 
-def test_accpet_invite_with_invalid_token_fail():
-    raise Exception(0)
+def test_accpet_invite_with_invalid_token_fail(
+    client: TestClient,
+):
+    response = client.post(
+        "/api/invites/accept",
+        json={
+            "firstName": "John",
+            "lastName": "Doe",
+            "password": "xpassword",
+            "phoneNumber": "08012345678",
+        },
+        params={"token": "wrong_token"},
+    )
+    assert response.status_code == 400
 
 
-def test_invite_existing_user_fail():
-    raise Exception()
+def test_invite_existing_user_fail(
+    admin_auth_header: dict,
+    courier_admin: models.CourierUser,
+    courier: models.Courier,
+    session: Session,
+    client: TestClient,
+):
+    assert session.query(models.Courier).count() > 0
+    response = client.post(
+        f"/api/admin/invites/couriers/{courier.id}",
+        params={"email": courier_admin.email},
+        headers=admin_auth_header,
+    )
+    session.expire_all()
+    assert session.query(models.Courier).count() > 0
+    assert response.status_code == 400
+    assert "exists" in response.json()["detail"]
 
 
-def test_invite_user_to_non_existing_partner_platform():
-    raise Exception()
+def test_invite_user_to_non_existing_partner_platform(
+    admin_auth_header: dict,
+    courier_admin: models.CourierUser,
+    session: Session,
+    client: TestClient,
+):
+    assert session.query(models.Courier).count() > 0
+    response = client.post(
+        f"/api/admin/invites/couriers/{uuid4()}",
+        params={"email": courier_admin.email},
+        headers=admin_auth_header,
+    )
+    session.expire_all()
+    assert session.query(models.Courier).count() > 0
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"]
 
 
 def test_get_invitation_token_details(
