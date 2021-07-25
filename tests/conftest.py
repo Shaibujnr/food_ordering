@@ -169,6 +169,54 @@ def food_stand_vendor_admin(session: Session, food_stand_vendor: models.Vendor):
 
 
 @pytest.fixture
+def restaurant_vendor_staff(session: Session, restaurant_vendor: models.Vendor):
+    vendor_staff = models.VendorUser(
+        vendor_id=restaurant_vendor.id,
+        first_name="John",
+        last_name="Doe",
+        role=enums.VendorUserRole.STAFF,
+        phone_number="08012345678",
+        email="restaurant_vendor_staff@test.com",
+        hashed_password=util.hash_password("password"),
+    )
+    session.add(vendor_staff)
+    session.commit()
+    return vendor_staff
+
+
+@pytest.fixture
+def home_vendor_staff(session: Session, home_vendor: models.Vendor):
+    vendor_staff = models.VendorUser(
+        vendor_id=home_vendor.id,
+        first_name="John",
+        last_name="Doe",
+        role=enums.VendorUserRole.STAFF,
+        phone_number="08012345678",
+        email="home_vendor_staff@test.com",
+        hashed_password=util.hash_password("password"),
+    )
+    session.add(vendor_staff)
+    session.commit()
+    return vendor_staff
+
+
+@pytest.fixture
+def food_stand_vendor_staff(session: Session, food_stand_vendor: models.Vendor):
+    vendor_staff = models.VendorUser(
+        vendor_id=food_stand_vendor.id,
+        first_name="John",
+        last_name="Doe",
+        role=enums.VendorUserRole.STAFF,
+        phone_number="08012345678",
+        email="food_stand_vendor_staff@test.com",
+        password=util.hash_password("password"),
+    )
+    session.add(vendor_staff)
+    session.commit()
+    return vendor_staff
+
+
+@pytest.fixture
 def courier_admin(session: Session, courier: models.Courier):
     courier_admin = models.CourierUser(
         courier_id=courier.id,
@@ -182,6 +230,39 @@ def courier_admin(session: Session, courier: models.Courier):
     session.add(courier_admin)
     session.commit()
     return courier_admin
+
+
+@pytest.fixture
+def courier_staff(session: Session, courier: models.Courier):
+    courier_staff = models.CourierUser(
+        courier_id=courier.id,
+        first_name="John",
+        last_name="Doe",
+        role=enums.CourierUserRole.STAFF,
+        phone_number="08012345678",
+        email="courier_staff@test.com",
+        hashed_password=util.hash_password("password"),
+    )
+    session.add(courier_staff)
+    session.commit()
+    return courier_staff
+
+
+@pytest.fixture
+def user(session: Session):
+    now = datetime.utcnow()
+    user = models.User(
+        email="user@test.com",
+        email_verified_on=now,
+        hashed_password=util.hash_password("password"),
+        first_name="Shaibu",
+        last_name="Shaibu",
+        phone_number="08012345678",
+        phone_number_verified_on=now,
+    )
+    session.add(user)
+    session.commit()
+    return user
 
 
 @pytest.fixture
@@ -203,6 +284,36 @@ def food_stand_vendor_admin_auth_header(food_stand_vendor_admin: models.VendorUs
 
 
 @pytest.fixture
+def restaurant_vendor_staff_auth_header(restaurant_vendor_staff: models.VendorUser):
+    access_token = util.create_access_token({"sub": str(restaurant_vendor_staff.id)})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def home_vendor_staff_auth_header(home_vendor_staff: models.VendorUser):
+    access_token = util.create_access_token({"sub": home_vendor_staff.id})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def food_stand_vendor_staff_auth_header(food_stand_vendor_staff: models.VendorUser):
+    access_token = util.create_access_token({"sub": food_stand_vendor_staff.id})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
 def courier_admin_auth_header(courier_admin: models.Courier):
     access_token = util.create_access_token({"sub": str(courier_admin.id)})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def courier_staff_auth_header(courier_staff: models.Courier):
+    access_token = util.create_access_token({"sub": str(courier_staff.id)})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def user_auth_header(user: models.User):
+    access_token = util.create_access_token({"sub": str(user.id)})
     return {"Authorization": f"Bearer {access_token}"}

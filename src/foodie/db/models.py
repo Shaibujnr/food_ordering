@@ -52,7 +52,7 @@ class User(AuthBase):
 
     __tablename__ = "users"
     phone_number = Column(String, nullable=False)
-    phone_number_verified_on = Column(String, nullable=False)
+    phone_number_verified_on = Column(DateTime, nullable=False)
 
 
 class Vendor(Base, EntityMixin, TimestampMixin):
