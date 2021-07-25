@@ -157,8 +157,12 @@ class OpenInformation(Base, EntityMixin, TimestampMixin):
         ChoiceType(enums.DaysOfTheWeek, impl=String()),
         nullable=False,
     )
-    open_from = Column(Time)
-    open_to = Column(Time)
+    is_closed = Column(Boolean, nullable=False, default=True)
+    closed_reason = Column(String, nullable=True)
+    open_from = Column(Time, nullable=False)
+    open_to = Column(Time, nullable=False)
+
+    vendor = relationship(Vendor, backref="open_informations")
 
 
 class Order(Base, EntityMixin, TimestampMixin):

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from foodie.api.auth import (
     auth_router,
 )
-from foodie.api.vendor import admin_vendor_router
+from foodie.api.vendor import admin_vendors_router, vendor_admin_vendors_router
 from foodie.api.courier import admin_courier_router
 from foodie.api.invite import (
     admin_invite_router,
@@ -16,7 +16,7 @@ def get_admin_router():
     """Router for all admin endpoints"""
     admin_router = APIRouter()
     admin_router.include_router(
-        admin_vendor_router, prefix="/vendors", tags=["Vendors"]
+        admin_vendors_router, prefix="/vendors", tags=["Vendors"]
     )
     admin_router.include_router(
         admin_courier_router, prefix="/couriers", tags=["Couriers"]
@@ -32,6 +32,9 @@ def get_vendor_admin_router():
     vendor_admin_router = APIRouter()
     vendor_admin_router.include_router(
         vendor_admin_invite_router, prefix="/invites", tags=["Invites"]
+    )
+    vendor_admin_router.include_router(
+        vendor_admin_vendors_router, prefix="/vendors", tags=["Vendors"]
     )
     return vendor_admin_router
 
