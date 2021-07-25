@@ -1,17 +1,16 @@
 """initial migration
 
-Revision ID: d81c7a65f440
-Revises: 
-Create Date: 2021-06-08 04:01:41.597401
+Revision ID: 2b357457c2a7
+Revises:
+Create Date: 2021-07-25 18:15:34.810138
 
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
-
+from sqlalchemy_utils import UUIDType, ScalarListType, JSONType
 
 # revision identifiers, used by Alembic.
-revision = "d81c7a65f440"
+revision = "2b357457c2a7"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -40,6 +39,7 @@ def upgrade():
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("address", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("name"),
     )
     op.create_table(
         "food_categories",
@@ -60,7 +60,7 @@ def upgrade():
         sa.Column("first_name", sa.String(), nullable=False),
         sa.Column("last_name", sa.String(), nullable=False),
         sa.Column("phone_number", sa.String(), nullable=False),
-        sa.Column("phone_number_verified_on", sa.String(), nullable=False),
+        sa.Column("phone_number_verified_on", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("email"),
     )
@@ -73,17 +73,14 @@ def upgrade():
         sa.Column("type", sa.String(), nullable=False),
         sa.Column("address", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("name"),
     )
     op.create_table(
         "contact_informations",
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "vendor_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("vendor_id", UUIDType(binary=False), nullable=False),
         sa.Column("email", sa.String(), nullable=False),
         sa.Column("phone_number", sa.String(), nullable=False),
         sa.ForeignKeyConstraint(
@@ -97,11 +94,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "courier_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("courier_id", UUIDType(binary=False), nullable=False),
         sa.Column("first_name", sa.String(), nullable=False),
         sa.Column("last_name", sa.String(), nullable=False),
         sa.Column("phone_number", sa.String(), nullable=False),
@@ -125,11 +118,7 @@ def upgrade():
         sa.Column("items", ScalarListType(), nullable=True),
         sa.Column("price", sa.String(), nullable=False),
         sa.Column("is_available", sa.Boolean(), nullable=False),
-        sa.Column(
-            "vendor_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("vendor_id", UUIDType(binary=False), nullable=False),
         sa.ForeignKeyConstraint(
             ["vendor_id"],
             ["vendors.id"],
@@ -141,11 +130,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "vendor_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("vendor_id", UUIDType(binary=False), nullable=False),
         sa.Column("day", sa.String(), nullable=False),
         sa.Column("open_from", sa.Time(), nullable=True),
         sa.Column("open_to", sa.Time(), nullable=True),
@@ -161,16 +146,8 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "user_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
-        sa.Column(
-            "courier_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("user_id", UUIDType(binary=False), nullable=False),
+        sa.Column("courier_id", UUIDType(binary=False), nullable=False),
         sa.Column("rating", sa.Float(), nullable=False),
         sa.Column("feedback", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -189,16 +166,8 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "user_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
-        sa.Column(
-            "vendor_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("user_id", UUIDType(binary=False), nullable=False),
+        sa.Column("vendor_id", UUIDType(binary=False), nullable=False),
         sa.Column("rating", sa.Float(), nullable=False),
         sa.Column("feedback", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -217,11 +186,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "vendor_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("vendor_id", UUIDType(binary=False), nullable=False),
         sa.Column("first_name", sa.String(), nullable=False),
         sa.Column("last_name", sa.String(), nullable=False),
         sa.Column("phone_number", sa.String(), nullable=False),
@@ -236,16 +201,8 @@ def upgrade():
     )
     op.create_table(
         "food_packages_food_categories_association",
-        sa.Column(
-            "food_package_id",
-            UUIDType(binary=False),
-            nullable=True,
-        ),
-        sa.Column(
-            "category_id",
-            UUIDType(binary=False),
-            nullable=True,
-        ),
+        sa.Column("food_package_id", UUIDType(binary=False), nullable=True),
+        sa.Column("category_id", UUIDType(binary=False), nullable=True),
         sa.ForeignKeyConstraint(
             ["category_id"],
             ["food_categories.id"],
@@ -260,21 +217,9 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "user_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
-        sa.Column(
-            "vendor_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
-        sa.Column(
-            "courier_user_id",
-            UUIDType(binary=False),
-            nullable=True,
-        ),
+        sa.Column("user_id", UUIDType(binary=False), nullable=False),
+        sa.Column("vendor_id", UUIDType(binary=False), nullable=False),
+        sa.Column("courier_user_id", UUIDType(binary=False), nullable=True),
         sa.Column("vendor_accepted", sa.Boolean(), nullable=True),
         sa.Column("courier_accepted", sa.Boolean(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -296,16 +241,8 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "user_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
-        sa.Column(
-            "food_package_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("user_id", UUIDType(binary=False), nullable=False),
+        sa.Column("food_package_id", UUIDType(binary=False), nullable=False),
         sa.Column("rating", sa.Float(), nullable=False),
         sa.Column("feedback", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -324,11 +261,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("id", UUIDType(binary=False), nullable=False),
-        sa.Column(
-            "order_id",
-            UUIDType(binary=False),
-            nullable=False,
-        ),
+        sa.Column("order_id", UUIDType(binary=False), nullable=False),
         sa.Column("event_type", sa.String(), nullable=False),
         sa.Column("payload", JSONType(), nullable=False),
         sa.ForeignKeyConstraint(
