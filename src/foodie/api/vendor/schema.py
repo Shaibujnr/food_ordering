@@ -1,18 +1,8 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import root_validator
 from datetime import time
 from foodie.api.schema import BaseSchema, OrmSchema
 from foodie import enums
-
-
-class VendorCreateSchema(BaseSchema):
-    name: str
-    type: enums.VendorType
-    address: str
-
-
-class VendorSchema(OrmSchema, VendorCreateSchema):
-    pass
 
 
 class OpenInformationUpdateSchema(BaseSchema):
@@ -28,3 +18,17 @@ class OpenInformationUpdateSchema(BaseSchema):
         if open_from is not None and open_to is not None:
             assert open_from < open_to
         return data
+
+
+class OpenInformationSchema(OrmSchema, OpenInformationUpdateSchema):
+    day: enums.DaysOfTheWeek
+
+
+class VendorCreateSchema(BaseSchema):
+    name: str
+    type: enums.VendorType
+    address: str
+
+
+class VendorSchema(OrmSchema, VendorCreateSchema):
+    open_informations: List[OpenInformationSchema]

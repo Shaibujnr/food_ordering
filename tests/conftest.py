@@ -1,6 +1,6 @@
 import pytest
 import random
-from datetime import datetime
+from datetime import datetime, time
 from fastapi import FastAPI
 from sqlalchemy import MetaData
 from sqlalchemy.orm.session import Session
@@ -78,6 +78,15 @@ def restaurant_vendor(session: Session) -> models.Vendor:
         type=enums.VendorType.RESTAURANT,
         address="restaurant vendor address",
     )
+    for day_of_the_week in enums.DaysOfTheWeek:
+        open_information = models.OpenInformation(
+            day=day_of_the_week,
+            vendor=vendor,
+            open_from=time(9, 0, 0),
+            open_to=time(19, 0, 0),
+            is_closed=True,
+        )
+        session.add(open_information)
     session.add(vendor)
     session.commit()
     return vendor
@@ -90,6 +99,15 @@ def home_vendor(session: Session) -> models.Vendor:
         type=enums.VendorType.HOME,
         address="home vendor address",
     )
+    for day_of_the_week in enums.DaysOfTheWeek:
+        open_information = models.OpenInformation(
+            day=day_of_the_week,
+            vendor=vendor,
+            open_from=time(9, 0, 0),
+            open_to=time(19, 0, 0),
+            is_closed=True,
+        )
+        session.add(open_information)
     session.add(vendor)
     session.commit()
     return vendor
@@ -102,6 +120,15 @@ def food_stand_vendor(session: Session) -> models.Vendor:
         type=enums.VendorType.FOOD_STAND,
         address="food stand vendor",
     )
+    for day_of_the_week in enums.DaysOfTheWeek:
+        open_information = models.OpenInformation(
+            day=day_of_the_week,
+            vendor=vendor,
+            open_from=time(9, 0, 0),
+            open_to=time(19, 0, 0),
+            is_closed=True,
+        )
+        session.add(open_information)
     session.add(vendor)
     session.commit()
     return vendor
@@ -273,13 +300,13 @@ def restaurant_vendor_admin_auth_header(restaurant_vendor_admin: models.VendorUs
 
 @pytest.fixture
 def home_vendor_admin_auth_header(home_vendor_admin: models.VendorUser):
-    access_token = util.create_access_token({"sub": home_vendor_admin.id})
+    access_token = util.create_access_token({"sub": str(home_vendor_admin.id)})
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture
 def food_stand_vendor_admin_auth_header(food_stand_vendor_admin: models.VendorUser):
-    access_token = util.create_access_token({"sub": food_stand_vendor_admin.id})
+    access_token = util.create_access_token({"sub": str(food_stand_vendor_admin.id)})
     return {"Authorization": f"Bearer {access_token}"}
 
 
@@ -291,13 +318,13 @@ def restaurant_vendor_staff_auth_header(restaurant_vendor_staff: models.VendorUs
 
 @pytest.fixture
 def home_vendor_staff_auth_header(home_vendor_staff: models.VendorUser):
-    access_token = util.create_access_token({"sub": home_vendor_staff.id})
+    access_token = util.create_access_token({"sub": str(home_vendor_staff.id)})
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture
 def food_stand_vendor_staff_auth_header(food_stand_vendor_staff: models.VendorUser):
-    access_token = util.create_access_token({"sub": food_stand_vendor_staff.id})
+    access_token = util.create_access_token({"sub": str(food_stand_vendor_staff.id)})
     return {"Authorization": f"Bearer {access_token}"}
 
 

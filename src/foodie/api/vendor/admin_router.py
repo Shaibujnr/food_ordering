@@ -1,4 +1,3 @@
-from typing import List
 from datetime import time
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
@@ -37,8 +36,3 @@ def create_vendor(
         session.add(open_information)
     session.commit()
     return new_vendor
-
-
-@router.get("/", response_model=List[VendorSchema])
-def fetch_vendors(session: Session = Depends(deps.get_session)):
-    return session.query(models.Vendor).all()
