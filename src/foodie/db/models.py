@@ -7,6 +7,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Float,
+    Numeric,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
@@ -32,94 +33,61 @@ food_packages_food_categories_association_table = Table(
 )
 
 
-class AuthBase(Base, EntityMixin, TimestampMixin):
-    __abstract__ = True
+class Org(Base, EntityMixin, TimestampMixin):
+    __tablename__ = "orgs"
+    org_type = Column(ChoiceType(enums.OrgType, impl=String()), nullable=False)
+    name = Column(String, nullable=False)
+    address = Column(String, nullable=False)
+
+    # TODO location column (lat, lng)
+
+    __table_args__ = (UniqueConstraint("org_type", "name"),)
+    __mapper_args__ = {"polymorphic_on": org_type}
+
+
+class Vendor(Org):
+    __tablename__ = "vendors"
+    id = Column(ForeignKey("orgs.id"), primary_key=True)
+    vendor_type = Column(ChoiceType(enums.VendorType, impl=String()), nullable=False)
+
+    __mapper_args__ = {"polymorphic_identity": enums.OrgType.VENDOR}
+
+
+class Courier(Org):
+    __tablename__ = "couriers"
+    id = Column(ForeignKey("orgs.id"), primary_key=True)
+
+    __mapper_args__ = {"polymorphic_identity": enums.OrgType.COURIER}
+
+
+class Admin(Base, EntityMixin, TimestampMixin):
+    """A platform admin"""
+
+    __tablename__ = "admins"
+    email = Column(String, nullable=False, unique=True)
+    hashed_password = Column(String, nullable=False)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+
+
+class User(Base, EntityMixin, TimestampMixin):
+    """A user that would like to place order for food on this platform"""
+
+    __tablename__ = "users"
     email = Column(String, nullable=False, unique=True)
     email_verified_on = Column(DateTime, nullable=True)
     hashed_password = Column(String, nullable=False)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
-
-
-class Admin(AuthBase):
-    """A platform admin"""
-
-    __tablename__ = "admins"
-
-
-class User(AuthBase):
-    """A user that would like to place order for food on this platform"""
-
-    __tablename__ = "users"
     phone_number = Column(String, nullable=False)
     phone_number_verified_on = Column(DateTime, nullable=False)
 
 
-class Vendor(Base, EntityMixin, TimestampMixin):
-    """
-    A food vendor, could be a restaurant or a food stand
-    or even a home food vendor.
-    """
-
-    __tablename__ = "vendors"
-    name = Column(String, nullable=False, unique=True)
-    type = Column(ChoiceType(enums.VendorType, impl=String()), nullable=False)
-    address = Column(String, nullable=False)
-
-    # TODO location
-
-
-class VendorUser(Base, EntityMixin, TimestampMixin):
-    """
-    A user under a specific vendor with specific roles
-    """
-
-    __tablename__ = "vendor_users"
-    vendor_id = Column(ForeignKey("vendors.id"), nullable=False)
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
-    phone_number = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    role = Column(
-        ChoiceType(enums.VendorUserRole, impl=String()),
-        nullable=False,
-    )
-    hashed_password = Column(String, nullable=False)
-
-    vendor = relationship(Vendor, backref="users")
-
-
-class Courier(Base, EntityMixin, TimestampMixin):
-    """
-    A courier or delivery business, tasked with the
-    responsibility of delivering orders to user
-    """
-
-    __tablename__ = "couriers"
-    name = Column(String, nullable=False, unique=True)
-    address = Column(String, nullable=False)
-
-    # TODO location
-
-
-class CourierUser(Base, EntityMixin, TimestampMixin):
-    """
-    A user under a specific courier with specific roles
-    """
-
-    __tablename__ = "courier_users"
-    courier_id = Column(ForeignKey("couriers.id"), nullable=False)
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
-    phone_number = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    role = Column(
-        ChoiceType(enums.CourierUserRole, impl=String()),
-        nullable=False,
-    )
-    hashed_password = Column(String, nullable=False)
-
-    courier = relationship(Courier, backref="users")
+class OrgUser(Base, EntityMixin, TimestampMixin):
+    __tablename__ = "org_users"
+    user_id = Column(ForeignKey("users.id"), nullable=False, unique=True)
+    org_id = Column(ForeignKey("orgs.id"), nullable=False)
+    role = Column(ChoiceType(enums.OrgUserRole, impl=String()), nullable=False)
 
 
 class FoodCategory(Base, EntityMixin, TimestampMixin):
@@ -133,7 +101,7 @@ class FoodPackage(Base, EntityMixin, TimestampMixin):
     description = Column(String, nullable=False)
     image_url = Column(String, nullable=False)
     items = Column(ScalarListType(str))
-    price = Column(String, nullable=False)
+    price = Column(Numeric, nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
     vendor_id = Column(ForeignKey("vendors.id"), nullable=False)
     categories = relationship(
@@ -144,7 +112,7 @@ class FoodPackage(Base, EntityMixin, TimestampMixin):
 
 class ContactInformation(Base, EntityMixin, TimestampMixin):
     __tablename__ = "contact_informations"
-    vendor_id = Column(ForeignKey("vendors.id"), nullable=False)
+    org_id = Column(ForeignKey("orgs.id"), nullable=False)
     email = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
 
@@ -165,7 +133,7 @@ class Order(Base, EntityMixin, TimestampMixin):
     __tablename__ = "orders"
     user_id = Column(ForeignKey("users.id"), nullable=False)
     vendor_id = Column(ForeignKey("vendors.id"), nullable=False)
-    courier_user_id = Column(ForeignKey("courier_users.id"), nullable=True)
+    courier_user_id = Column(ForeignKey("org_users.id"), nullable=True)
     vendor_accepted = Column(Boolean, nullable=True)
     courier_accepted = Column(Boolean, nullable=True)
 
@@ -200,8 +168,8 @@ class UserFoodPackageFeedback(Base, EntityMixin, TimestampMixin):
 
 class UserCourierFeedback(Base, EntityMixin, TimestampMixin):
     __tablename__ = "user_courier_feedbacks"
-    __table_args__ = (UniqueConstraint("courier_id", "user_id"),)
+    __table_args__ = (UniqueConstraint("courier_user_id", "user_id"),)
     user_id = Column(ForeignKey("users.id"), nullable=False)
-    courier_id = Column(ForeignKey("couriers.id"), nullable=False)
+    courier_user_id = Column(ForeignKey("org_users.id"), nullable=False)
     rating = Column(Float, nullable=False)
     feedback = Column(String, nullable=True)

@@ -1,6 +1,17 @@
 from enum import Enum
 
 
+class OrgType(str, Enum):
+    VENDOR = "vendor"
+    COURIER = "courier"
+
+
+class OrgUserRole(str, Enum):
+    ADMIN = "admin"
+    STAFF = "staff"
+    MANAGER = "manager"
+
+
 class VendorType(str, Enum):
     RESTAURANT = "restaurant"
     HOME = "home"
